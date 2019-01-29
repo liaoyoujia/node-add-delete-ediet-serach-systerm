@@ -3,6 +3,9 @@ const url = 'mongodb://localhost:27017';
 const assert = require('assert');
 
 const MongoClient = require('mongodb').MongoClient;
+const ObjectID = require('mongodb').ObjectID;
+
+
 
 function connectMon(dbName,callback) {
   MongoClient.connect(url, { useNewUrlParser: true }, (err, client) => {
@@ -14,9 +17,10 @@ function connectMon(dbName,callback) {
 }
 
 // 增加数据
-function insertDocuments(dbName,data, callback) {
+function insertDocuments(dbName,data,callback,collectName) {
   connectMon(dbName,(db) => {
-    const collection = db.collection('documents');
+    const collect=collectName||'document'
+    const collection = db.collection(collect);
     collection.insertMany([data], (err, result) => {
       if (err) {
         console.log('出错了');
@@ -27,9 +31,10 @@ function insertDocuments(dbName,data, callback) {
 }
 
 // 查找数据
-function findDocuments(dbName,data, callback) {
+function findDocuments(dbName,data,callback,collectName) {
   connectMon(dbName,(db) => {
-    const collection = db.collection('documents');
+    const collect=collectName||'document'
+    const collection = db.collection(collect);
     collection.find(data).toArray((err, docs) => {
       assert.equal(err, null);
       callback(docs);
@@ -37,8 +42,42 @@ function findDocuments(dbName,data, callback) {
   });
 }
 
+
+//更新数据
+function updateDocument(dbName,fromData,behindData, callback,collectName) {
+  connectMon(dbName,(db) => {
+    const collect=collectName||'document'
+    const collection = db.collection(collect);
+  collection.updateOne(fromData
+    , { $set: behindData }, function(err, result) {
+      if(err){
+        console.log(err);
+      }
+    callback(result);
+  });
+})}
+
+
+// 删除数据
+
+function removeDocument(dbName,data ,callback,collectName) {
+  connectMon(dbName,(db) => {
+    const collect=collectName||'document'
+    const collection = db.collection(collect);
+  collection.deleteOne(data, function(err, result) {
+   if(err){
+     console.log(err);
+   }
+    callback(result);
+
+      });
+    })
+}
 module.exports={
     insertDocuments,
-    findDocuments
+    findDocuments,
+    updateDocument,
+    ObjectID,
+    removeDocument
 }
 
